@@ -1,7 +1,7 @@
 # Game_Engine_LWJGL
-My First game engine in java. Also my first game, I am using opengl3! 
+My First game engine in java. Also my first game. I am using OpenGL! 
 
-This game/game engine has been strongly inspiried by a youtube channel ThinMatrix.
+This game/game engine has been strongly inspiried by a youtube channel by the name of ThinMatrix.
 
 ThinMatrix Chanel: https://www.youtube.com/user/ThinMatrix
 
