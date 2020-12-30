@@ -10,6 +10,8 @@ import java.util.Random;
 
 public class GenerateRandomTerrain {
 
+    private Entity entity;
+
     public GenerateRandomTerrain() {
 
     }
@@ -17,7 +19,6 @@ public class GenerateRandomTerrain {
     public List<Entity> generateThings(Entity entity, int iteration){
         List<Entity> allCube = new ArrayList<Entity>();
         Random random = new Random();
-
         for(int i = 0; i < iteration; i++){
             float x = random.nextFloat() * 100 -50;
             float y = 0;
@@ -27,5 +28,9 @@ public class GenerateRandomTerrain {
         }
 
         return allCube;
+    }
+
+    public Entity getEntity() {
+        return entity;
     }
 }

@@ -13,7 +13,9 @@ import terrains.Terrain;
 import textures.ModelTexture;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Random;
 
 public class MainGameLoop {
 
@@ -23,13 +25,19 @@ public class MainGameLoop {
 
         Loader loader = new Loader();
 
-
-
         RawModel model = OBJLoader.loadObjModel("tree", loader);
 
-        TextureModel staticModel = new TextureModel(model, new ModelTexture(loader.loadTexture("tree")));
 
-        GenerateRandomTerrain generateRandomTerrain = new GenerateRandomTerrain();
+        TextureModel staticModel = new TextureModel(model, new ModelTexture(loader.loadTexture("tree")));
+        TextureModel grass = new TextureModel(OBJLoader.loadObjModel("grassModel", loader),
+                new ModelTexture(loader.loadTexture("grassTexture")));
+        grass.getTexture().setHasTransparency(true);
+        grass.getTexture().setUseFakeLighting(true);
+        TextureModel fern = new TextureModel(OBJLoader.loadObjModel("fern", loader),
+                new ModelTexture(loader.loadTexture("fern")));
+        fern.getTexture().setHasTransparency(true);
+
+
 
         ModelTexture texture = staticModel.getTexture();
         texture.setReflectivity(0.5f);
@@ -43,7 +51,13 @@ public class MainGameLoop {
         Camera camera = new Camera();
         MasterRenderer masterRenderer = new MasterRenderer();
 
-        List<Entity> threeMaster = generateRandomTerrain.generateThings(entity, 100);
+        List<Entity> entities = new ArrayList<Entity>();
+        Random random = new Random();
+        for(int i = 0; i<500; i++){
+            entities.add(new Entity(staticModel,new Vector3f(random.nextFloat() * 800 - 400, 0, random.nextFloat() * -600),0,0,0,3));
+            entities.add(new Entity(grass,new Vector3f(random.nextFloat() * 800 - 400, 0, random.nextFloat() * -600),0,0,0,1));
+            entities.add(new Entity(fern,new Vector3f(random.nextFloat() * 800 - 400, 0, random.nextFloat() * -600),0,0,0,0.6f));
+        }
 
         while (!Display.isCloseRequested()){
             entity.increaseRotation(0,0,0);
@@ -51,9 +65,9 @@ public class MainGameLoop {
 
             masterRenderer.processTerrain(terrain);
             masterRenderer.processTerrain(terrain2);
-            for (Entity arbre:threeMaster)
-            {
-                masterRenderer.processEntity(arbre);
+
+            for(Entity some:entities){
+                masterRenderer.processEntity(some);
             }
 
             masterRenderer.render(light,camera);
@@ -67,3 +81,24 @@ public class MainGameLoop {
     }
 
 }
+
+/*      GenerateRandomTerrain generateRandomTerrain = new GenerateRandomTerrain();
+        List<Entity> threeMaster = generateRandomTerrain.generateThings(entity, 100);
+        List<Entity> fernMaster = generateRandomTerrain.generateThings(new Entity(new TextureModel
+                (OBJLoader.loadObjModel("fern",loader),new ModelTexture(loader.loadTexture("fern"))),
+                new Vector3f(0,0,0), 0,0,0,1),100);
+        List<Entity> grassMaster = generateRandomTerrain.generateThings(new Entity(new TextureModel
+                (OBJLoader.loadObjModel("grassModel",loader),new ModelTexture(loader.loadTexture("grassTexture"))),
+                new Vector3f(0,0,0), 0,0,0,1),100);
+            for (Entity arbre:threeMaster)
+            {
+                masterRenderer.processEntity(arbre);
+            }
+            for(Entity fern:fernMaster)
+            {
+                masterRenderer.processEntity(fern);
+            }
+            for(Entity grass:grassMaster)
+            {
+                masterRenderer.processEntity(grass);
+            }*/
