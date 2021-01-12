@@ -1,8 +1,10 @@
 package normalMappingRenderer;
 
+import java.io.IOException;
 import java.util.List;
 import java.util.Map;
 
+import models.TextureModel;
 import org.lwjgl.opengl.GL11;
 import org.lwjgl.opengl.GL13;
 import org.lwjgl.opengl.GL20;
@@ -14,7 +16,6 @@ import entities.Camera;
 import entities.Entity;
 import entities.Light;
 import models.RawModel;
-import models.TexturedModel;
 import renderEngine.MasterRenderer;
 import textures.ModelTexture;
 import toolbox.Maths;
@@ -23,7 +24,7 @@ public class NormalMappingRenderer {
 
 	private NormalMappingShader shader;
 
-	public NormalMappingRenderer(Matrix4f projectionMatrix) {
+	public NormalMappingRenderer(Matrix4f projectionMatrix) throws IOException {
 		this.shader = new NormalMappingShader();
 		shader.start();
 		shader.loadProjectionMatrix(projectionMatrix);
@@ -31,10 +32,10 @@ public class NormalMappingRenderer {
 		shader.stop();
 	}
 
-	public void render(Map<TexturedModel, List<Entity>> entities, Vector4f clipPlane, List<Light> lights, Camera camera) {
+	public void render(Map<TextureModel, List<Entity>> entities, Vector4f clipPlane, List<Light> lights, Camera camera) {
 		shader.start();
 		prepare(clipPlane, lights, camera);
-		for (TexturedModel model : entities.keySet()) {
+		for (TextureModel model : entities.keySet()) {
 			prepareTexturedModel(model);
 			List<Entity> batch = entities.get(model);
 			for (Entity entity : batch) {
@@ -50,12 +51,13 @@ public class NormalMappingRenderer {
 		shader.cleanUp();
 	}
 
-	private void prepareTexturedModel(TexturedModel model) {
+	private void prepareTexturedModel(TextureModel model) {
 		RawModel rawModel = model.getRawModel();
 		GL30.glBindVertexArray(rawModel.getVaoID());
 		GL20.glEnableVertexAttribArray(0);
 		GL20.glEnableVertexAttribArray(1);
 		GL20.glEnableVertexAttribArray(2);
+		GL20.glEnableVertexAttribArray(3);
 		ModelTexture texture = model.getTexture();
 		shader.loadNumberOfRows(texture.getNumberOfRows());
 		if (texture.isHasTransparency()) {
@@ -64,6 +66,8 @@ public class NormalMappingRenderer {
 		shader.loadShineVariables(texture.getShineDamper(), texture.getReflectivity());
 		GL13.glActiveTexture(GL13.GL_TEXTURE0);
 		GL11.glBindTexture(GL11.GL_TEXTURE_2D, model.getTexture().getID());
+		GL13.glActiveTexture(GL13.GL_TEXTURE1);
+		GL11.glBindTexture(GL11.GL_TEXTURE_2D, model.getTexture().getNormalMap());
 	}
 
 	private void unbindTexturedModel() {
@@ -71,11 +75,12 @@ public class NormalMappingRenderer {
 		GL20.glDisableVertexAttribArray(0);
 		GL20.glDisableVertexAttribArray(1);
 		GL20.glDisableVertexAttribArray(2);
+		GL20.glEnableVertexAttribArray(3);
 		GL30.glBindVertexArray(0);
 	}
 
 	private void prepareInstance(Entity entity) {
-		Matrix4f transformationMatrix = Maths.createTransformationMatrix(entity.getPosition(), entity.getRotX(),
+		Matrix4f transformationMatrix = Maths.createdTransformationMatrix(entity.getPosition(), entity.getRotX(),
 				entity.getRotY(), entity.getRotZ(), entity.getScale());
 		shader.loadTransformationMatrix(transformationMatrix);
 		shader.loadOffset(entity.getTextureXOffset(), entity.getTextureYOffset());

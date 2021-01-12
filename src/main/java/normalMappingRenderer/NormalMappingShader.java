@@ -1,5 +1,6 @@
 package normalMappingRenderer;
 
+import java.io.IOException;
 import java.util.List;
 
 import org.lwjgl.util.vector.Matrix4f;
@@ -14,8 +15,8 @@ public class NormalMappingShader extends ShaderProgram{
 	
 	private static final int MAX_LIGHTS = 4;
 	
-	private static final String VERTEX_FILE = "src/normalMappingRenderer/normalMapVShader.txt";
-	private static final String FRAGMENT_FILE = "src/normalMappingRenderer/normalMapFShader.txt";
+	private static final String VERTEX_FILE = "src/main/java/normalMappingRenderer/normalMapVShader.txt";
+	private static final String FRAGMENT_FILE = "src/main/java/normalMappingRenderer/normalMapFShader.txt";
 	
 	private int location_transformationMatrix;
 	private int location_projectionMatrix;
@@ -30,8 +31,9 @@ public class NormalMappingShader extends ShaderProgram{
 	private int location_offset;
 	private int location_plane;
 	private int location_modelTexture;
+	private int location_normalMap;
 
-	public NormalMappingShader() {
+	public NormalMappingShader() throws IOException {
 		super(VERTEX_FILE, FRAGMENT_FILE);
 	}
 
@@ -40,10 +42,11 @@ public class NormalMappingShader extends ShaderProgram{
 		super.bindAttribute(0, "position");
 		super.bindAttribute(1, "textureCoordinates");
 		super.bindAttribute(2, "normal");
+		super.bindAttribute(3, "tangent");
 	}
 
 	@Override
-	protected void getAllUniformLocations() {
+	protected void getAllUniformLocation() {
 		location_transformationMatrix = super.getUniformLocation("transformationMatrix");
 		location_projectionMatrix = super.getUniformLocation("projectionMatrix");
 		location_viewMatrix = super.getUniformLocation("viewMatrix");
@@ -54,7 +57,7 @@ public class NormalMappingShader extends ShaderProgram{
 		location_offset = super.getUniformLocation("offset");
 		location_plane = super.getUniformLocation("plane");
 		location_modelTexture = super.getUniformLocation("modelTexture");
-		
+		location_normalMap = super.getUniformLocation("normalMap");
 		location_lightPositionEyeSpace = new int[MAX_LIGHTS];
 		location_lightColour = new int[MAX_LIGHTS];
 		location_attenuation = new int[MAX_LIGHTS];
@@ -67,10 +70,11 @@ public class NormalMappingShader extends ShaderProgram{
 	
 	protected void connectTextureUnits(){
 		super.loadInt(location_modelTexture, 0);
+		super.loadInt(location_normalMap, 1);
 	}
 	
 	protected void loadClipPlane(Vector4f plane){
-		super.loadVector(location_plane, plane);
+		super.load4DVector(location_plane, plane);
 	}
 	
 	protected void loadNumberOfRows(int numberOfRows){
@@ -82,7 +86,7 @@ public class NormalMappingShader extends ShaderProgram{
 	}
 	
 	protected void loadSkyColour(float r, float g, float b){
-		super.loadVector(location_skyColour, new Vector3f(r,g,b));
+		super.load3DVector(location_skyColour, new Vector3f(r,g,b));
 	}
 	
 	protected void loadShineVariables(float damper,float reflectivity){
@@ -97,13 +101,13 @@ public class NormalMappingShader extends ShaderProgram{
 	protected void loadLights(List<Light> lights, Matrix4f viewMatrix){
 		for(int i=0;i<MAX_LIGHTS;i++){
 			if(i<lights.size()){
-				super.loadVector(location_lightPositionEyeSpace[i], getEyeSpacePosition(lights.get(i), viewMatrix));
-				super.loadVector(location_lightColour[i], lights.get(i).getColour());
-				super.loadVector(location_attenuation[i], lights.get(i).getAttenuation());
+				super.load3DVector(location_lightPositionEyeSpace[i], getEyeSpacePosition(lights.get(i), viewMatrix));
+				super.load3DVector(location_lightColour[i], lights.get(i).getColour());
+				super.load3DVector(location_attenuation[i], lights.get(i).getAttenuation());
 			}else{
-				super.loadVector(location_lightPositionEyeSpace[i], new Vector3f(0, 0, 0));
-				super.loadVector(location_lightColour[i], new Vector3f(0, 0, 0));
-				super.loadVector(location_attenuation[i], new Vector3f(1, 0, 0));
+				super.load3DVector(location_lightPositionEyeSpace[i], new Vector3f(0, 0, 0));
+				super.load3DVector(location_lightColour[i], new Vector3f(0, 0, 0));
+				super.load3DVector(location_attenuation[i], new Vector3f(1, 0, 0));
 			}
 		}
 	}
